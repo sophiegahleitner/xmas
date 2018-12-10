@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper	namespace="im430.xmas.dao.mybatis.MappedSqlSessionChildrenDAOImpl">
+
+	<insert id="addChild" parameterType="Child" useGeneratedKeys="true" keyProperty="id">
+		insert into children(name, address_id)
+		values (#{name}, #{address.id})
+	</insert>
+	
+	<delete id="removeChild" parameterType="Child">
+		delete from children where id = #{id}
+	</delete>
+	
+	<update id="updateChild" parameterType="Child">
+		update children
+		set name = #{name}, address_id = #{address.id} where id = #{id}
+	</update>
+	
+	<select id="getChildById" resultMap="joinedChildrenResult" parameterType="int">
+		select c.id as c_id, c.name, a.id as a_id, a.text as address, g.id as g_id, g.description as gift 
+		from children c
+		left join addresses a on c.address_id = a.id
+		left join gifts g on c.id = g.child_id
+		where c.id = #{id}
+	</select>
+	
+	<select id="getAllChildren" resultMap="joinedChildrenResult">
+		select c.id as c_id, c.name, a.id as a_id, a.text as address, g.id as g_id, g.description as gift
+		from children c 
+		left join addresses a on c.address_id = a.id
+		left join gifts g on c.id = g.child_id
+		order by c.name
+	</select>
+	
+	<insert id="addGift" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="gift.id">
+		insert into gifts(description, child_id) 
+		values(#{gift.description}, #{childID})
+	</insert>
+	
+	<delete id="removeGift" parameterType="Gift">
+		delete from gifts where id = #{id}
+	</delete>
+	
+	
+	<resultMap id="joinedChildrenResult" type="Child">
+		<id property="id" column="c_id" />
+		<result property="name" column="name" />
+		<association property="address" javaType="Address">
+			<id property="id" column="a_id" />
+			<result property="text" column="address" />
+		</association>
+		<collection property="gifts" javaType="ArrayList" ofType="Gift">
+			<id property="id" column="g_id"/>
+			<result property="description" column="gift" />
+		</collection>
+	</resultMap>
+
+</mapper> 
